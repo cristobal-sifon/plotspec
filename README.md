@@ -6,7 +6,7 @@ Tool for plotting 1d and 2d spectra
 `plotspec` is a simple, stand-alone, spectral plotting tool. It allows the display of one or several 1d spectra below the corresponding 2d spectrum, with both plots matched in wavelength. It can also display the location of emission and/or absorption lines that can either be supplied by the user or taken from the default set incorporated in the code. Additionally, these lines can be redshifted by a user-supplied value. At the bottom of this page you'll find examples of an emission-line and an absorption-line example spectra. You can download the data that was used to create the plots shown by clicking in the figures. 
 
 #### Usage:
-    plotspec <parameter1>=<value1> <parameter2>=<value2> ...
+    plotspec [-h] <parameter1>=<value1> <parameter2>=<value2> ...
 
 
 #### Parameters: 
@@ -32,9 +32,9 @@ A title to print in the plot (e.g. the name of the object). Must not contain spa
 Text file containing the lines that will be plotted with the spectrum. The format of the file is two columns (space-or tab-separated), the first being the rest-frame wavelength and the second being the name of the line. Lines can be commented with the `#` character. If the file is not provided, a default set of lines including the most common ones (from ~100 to ~700 nm) will be displayed. 
   * `tickspace` (type: `int` &mdash; default: `500`)  
 Separation between ticks in the plot, in Angstrom. 
-  * `z1` (type: `float`)  
+  * `vmin` (type: `float`)  
 Lower limit, in counts, used for the colorscale. If not provided it is automatically calculated as in DS9's `zscale`.
-  * `z2` (type: `float`)  
+  * `vmax` (type: `float`)  
 Upper limit, in counts, used for the colorscale. If not provided it is automatically calculated as in DS9's `zscale`.
   * `contrast` (type: `float` between `0` and `1` &mdash; default: `0.6`)  
 The contrast of the 2d image, as in DS9. 

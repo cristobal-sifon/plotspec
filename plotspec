@@ -13,11 +13,44 @@ from scipy import interpolate
 import matplotlib
 matplotlib.rcParams['backend'] = 'GTKAgg'
 
+
+if sys.argv[1] in ('-h', '--help'):
+    # introduction -- please don't delete
+    print
+    print '\t**********************************************'
+    print '\t*                                            *'
+    print '\t*                  plotspec                  *'
+    print '\t*                                            *'
+    print '\t*             by Cristobal Sifon             *'
+    print '\t*            Princeton University            *'
+    print '\t*           May, 2011 - Oct, 2016            *'
+    print '\t*                                            *'
+    print '\t* ------------------------------------------ *'
+    print '\t*         sifon@astro.princeton.edu          *'
+    print '\t*   http://www.astro.princeton.edu/~sifon/   *'
+    print '\t**********************************************'
+    print '\n'
+    print '  Usage:'
+    print '\t\tplotspec <file1d> [<parameter>=<value>]'
+    print '\n'
+    print '\tAlphabetical list of available parameters:'
+    print '\t\tcontrast, cz, dv, figtitle, file2d, fileroot, lheight,',
+    print 'linefile, linefill, thresh, tickspace, vmin, vmax, z'
+    print '\n\t\tSee https://github.com/cristobal-sifon/plotspec',
+    print 'for more details'
+    print
+    exit()
+
+
 # default values
 path = ''
 file1d = ''; file2d = ''
-contrast = 0.6; z1 = None; z2 = None
-z = 0.; cz = 0.; dv = 0
+contrast = 0.6
+vmin = None
+vmax = None
+z = 0.
+cz = 0.
+dv = 0
 thresh = 20
 title = ''
 tickspace = 500
@@ -25,6 +58,7 @@ linefill = 0.8
 linefile = ''
 lheight = 0.2
 smooth = 1
+output = ''
 
 # if only one argument is provided, will be assumed to be the filename
 # for the 1d spectrum
@@ -49,10 +83,10 @@ for argv in sys.argv:
         contrast = float(argv[9:])
     if argv[:7] == 'thresh=':
         thresh = float(argv[7:])
-    if argv[:3] == 'z1=':
-        z1 = float(argv[3:])
-    if argv[:3] == 'z2=':
-        z2 = float(argv[3:])
+    if argv[:5] == 'vmin=':
+        vmin = float(argv[5:])
+    if argv[:5] == 'vmax=':
+        vmax = float(argv[5:])
     if argv[:10] == 'tickspace=':
         tickspace = float(argv[10:])
     if argv[:9] == 'linefill=':
@@ -65,6 +99,9 @@ for argv in sys.argv:
         lheight = float(argv[8:])
     if argv[:7] == 'smooth=':
         smooth = int(argv[7:])
+    if argv[:7] == 'output=':
+        output = argv[7:]
+
 if cz != 0. and z == 0.:
     z = cz / 299792.458
 
@@ -83,9 +120,10 @@ if '--no-legend' in sys.argv:
 # speed of light, in km/s
 c = 2999792.458
 
+
 # wrap up of all the tasks
 def main(path='', file1d='', file2d='', title='', contrast=0.25,
-         linefile='', z=0., dv=1000, thresh=20, z1=None, z2=None,
+         linefile='', z=0., dv=1000, thresh=20, vmin=None, vmax=None,
          tickspace=tickspace, linefill=0.8, lheight=0.2, rest=False,
          legend=True, smooth=1, bw=False, cmap=cm.Greys_r):
     if not file1d:
@@ -96,13 +134,14 @@ def main(path='', file1d='', file2d='', title='', contrast=0.25,
     dz = dv / c
     fig = plot(file1d, file2d, title,
                z=z, dz=dz, contrast=contrast, thresh=thresh,
-               z1=z1, z2=z2, tickspace=tickspace, linefill=linefill,
+               vmin=vmin, vmax=vmax, tickspace=tickspace, linefill=linefill,
                linefile=linefile, lheight=lheight, rest=rest,
                legend=legend, smooth=smooth, bw=bw, cmap=cmap)
     return fig
 
+
 def plot(file1d, file2d, title='', contrast=0.25, bin=1, z=0., dz=0.0005,
-         thresh=20, z1=None, z2=None, tickspace=500, linefill=0.8,
+         thresh=20, vmin=None, vmax=None, tickspace=500, linefill=0.8,
          linefile='', lheight=0.2, rest=False, legend=True,
          smooth=1, bw=False, cmap=cm.Greys_r):
     fig = pylab.figure(facecolor='white')
@@ -134,13 +173,14 @@ def plot(file1d, file2d, title='', contrast=0.25, bin=1, z=0., dz=0.0005,
         mark_lines(ax1d, file1d[0], z, dz, linefile, spectrum)
     # the 2d spectrum, which might not be given
     if file2d:
-        ax2d = plot2d(fig, ax1d, file2d, z, rest, contrast, z1, z2, cmap=cmap)
+        ax2d = plot2d(fig, ax1d, file2d, z, rest, contrast, vmin, vmax, cmap=cmap)
     if title:
         pylab.title(title)
     if __name__ == '__main__':
         pylab.show()
     #pylab.savefig('spectrum.png', format = 'png')
     return fig, ax1d, ax2d
+
 
 #------------------------------------------------------------------------#
 #-------------- These three functions are for the 1d box ----------------#
@@ -184,6 +224,7 @@ def plot1d(file1d, ax1d, z, thresh, tickspace, rest, bw, smooth, shift=0):
     ax1d.set_xticklabels(xticks_val)
     return spectrum
 
+
 def annotate_z(ax1d, z, dz):
     annot = 'z = %.4f' %z
     if dz > 0:
@@ -191,6 +232,7 @@ def annotate_z(ax1d, z, dz):
     ax1d.annotate(annot, xy=(0.06, 0.83), xycoords='axes fraction',
                   color='k', fontsize='20')#, family='serif')
     return
+
 
 def print_objectID(ax1d, fits):
     # add .fits extension if not given
@@ -205,6 +247,7 @@ def print_objectID(ax1d, fits):
                   xy=(0.06, 0.75), xycoords='axes fraction',
                   color='k', fontsize='20')#, family='serif')
     return
+
 
 def mark_lines(ax1d, file1d, z, dz, linefile, spectrum):
     # add .fits extension if not given
@@ -253,10 +296,11 @@ def mark_lines(ax1d, file1d, z, dz, linefile, spectrum):
             ax1d.annotate(linenames[i], xy=(linepix+10,height), color='r')
     return
 
+
 #------------------------------------------------------------------------#
 #------------------------------------------------------------------------#
 
-def plot2d(fig, ax1d, file2d, z, rest, contrast, z1, z2, cmap=cm.Greys_r):
+def plot2d(fig, ax1d, file2d, z, rest, contrast, vmin, vmax, cmap=cm.Greys_r):
     # add .fits extension if not given
     if file2d[-5:] != '.fits' and file2d[-4:] != '.fit':
         file2d += '.fit'
@@ -265,17 +309,17 @@ def plot2d(fig, ax1d, file2d, z, rest, contrast, z1, z2, cmap=cm.Greys_r):
     fits = pyfits.open(file2d)
     img = fits[0].data
     fits.close()
-    if not z1:
-        z1, blah = zscale.zscale(img, contrast=contrast)
-    if not z2:
-        blah, z2 = zscale.zscale(img, contrast=contrast)
+    if not vmin:
+        vmin, blah = zscale.zscale(img, contrast=contrast)
+    if not vmax:
+        blah, vmax = zscale.zscale(img, contrast=contrast)
     height = 0.001 * img.shape[0]
     if height < 150:
         box2d = [0.05, 0.92 - height / 2, 0.9, height]
     else:
         box2d = [0.05, 0.825, 0.9, 0.15]
     ax2d = fig.add_axes(box2d, sharex=ax1d, yticks=[])
-    ax2d.imshow(img, aspect='auto', vmin=z1, vmax=z2, cmap=cmap)
+    ax2d.imshow(img, aspect='auto', vmin=vmin, vmax=vmax, cmap=cmap)
     ax2d.set_ylim(0, img.shape[0])
     wavelength = pix2wave(file2d)
     xticks_loc, xticks_val = ConvertTicks(file2d, wavelength, tickspace,
@@ -283,6 +327,7 @@ def plot2d(fig, ax1d, file2d, z, rest, contrast, z1, z2, cmap=cm.Greys_r):
     ax2d.set_xticks(xticks_loc)
     ax2d.set_xticklabels(xticks_val)
     return ax2d
+
 
 def read_lines(file):
     lines = []
@@ -298,8 +343,10 @@ def read_lines(file):
                 linenames.append('')
     return lines, linenames
 
+
 def to_restframe(z, wave):
     return wave / (1 + z)
+
 
 def ConvertTicks(file2dfile, wave, tickspace=500, z=0, rest=False):
     if rest:
@@ -323,6 +370,7 @@ def ConvertTicks(file2dfile, wave, tickspace=500, z=0, rest=False):
     ticks_loc = scipy.array(ticks_loc)
     return ticks_loc, ticks_val
 
+
 def pix2wave(specfilename, refpix_key='CRPIX1', refwave_key='CRVAL1',
              slope_key='CD1_1', Npix_key='NAXIS1'):
     specfile = pyfits.open(specfilename)
@@ -334,6 +382,7 @@ def pix2wave(specfilename, refpix_key='CRPIX1', refwave_key='CRVAL1',
     specfile.close()
     t = scipy.arange(1, Npix + 1)
     return slope * (t - refpix) + refwave
+
 
 def wave2pix(specfilename, wave, refpix_key='CRPIX1', refwave_key='CRVAL1',
              slope_key='CD1_1'):
@@ -349,6 +398,7 @@ def wave2pix(specfilename, wave, refpix_key='CRPIX1', refwave_key='CRVAL1',
     specfile.close()
     return (wave - refwave) / slope + refpix
 
+
 def getWaveValue(specfilename, pix, refpix_key='CRPIX1',
                  refwave_key='CRVAL1', slope_key='CD1_1'):
     specfile = pyfits.open(specfilename)
@@ -358,6 +408,7 @@ def getWaveValue(specfilename, pix, refpix_key='CRPIX1',
     slope = head[slope_key]
     specfile.close()
     return slope * (pix - refpix) + refwave
+
 
 def BadPixels(spectrum, niter=3, add_local=10, thresh=20):
     """
@@ -389,25 +440,10 @@ def BadPixels(spectrum, niter=3, add_local=10, thresh=20):
                    spectrum[j] = local
     return spectrum
 
-# introduction -- please don't delete
-#print ''
-#print '\t**********************************************'
-#print '\t*                                            *'
-#print '\t*                  plotspec                  *'
-#print '\t*                                            *'
-#print '\t*             by Cristobal Sifon             *'
-#print '\t*             Leiden Observatory             *'
-#print '\t*           May, 2011 - Oct, 2014            *'
-#print '\t*                                            *'
-#print '\t* ------------------------------------------ *'
-#print '\t*          sifon@strw.leidenuniv.            *'
-#print '\t*   http://home.strw.leidenuniv.nl/~sifon/   *'
-#print '\t**********************************************'
-#print ''
 
 if __name__ == '__main__':
     main(path, file1d, file2d,
          title, contrast, linefile, z, dv,
-         thresh, z1, z2, tickspace, linefill, lheight,
+         thresh, vmin, vmax, tickspace, linefill, lheight,
          rest, legend, smooth, bw)
 
