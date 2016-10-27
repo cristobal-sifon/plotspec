@@ -31,12 +31,12 @@ if sys.argv[1] in ('-h', '--help'):
     print '\t**********************************************'
     print '\n'
     print '  Usage:'
-    print '\t\tplotspec <file1d> [<parameter>=<value>]'
+    print '    plotspec <file1d> [<parameter>=<value>]'
     print '\n'
-    print '\tAlphabetical list of available parameters:'
-    print '\t\tcontrast, cz, dv, figtitle, file2d, fileroot, lheight,',
+    print '  Alphabetical list of available parameters:'
+    print '    contrast, cz, dv, figtitle, file2d, fileroot, lheight,',
     print 'linefile, linefill, thresh, tickspace, vmin, vmax, z'
-    print '\n\t\tSee https://github.com/cristobal-sifon/plotspec',
+    print '\n  See https://github.com/cristobal-sifon/plotspec/',
     print 'for more details'
     print
     exit()
