@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 import glob
 import os
-import pyfits
 import pylab
 import scipy
 import sys
+from astropy.io import fits as pyfits
 from matplotlib import cm
 from numdisplay import zscale
 from scipy import interpolate
@@ -33,8 +33,8 @@ if len(sys.argv) == 2:
 
 # given in the command line?
 for argv in sys.argv:
-    if argv[:9] == 'path=':
-        path = argv[9:]
+    if argv[:5] == 'path=':
+        path = argv[5:]
     if argv[:7] == 'file1d=':
         file1d = argv[7:]
     if argv[:7] == 'file2d=':
@@ -173,7 +173,7 @@ def plot1d(file1d, ax1d, z, thresh, tickspace, rest, bw, smooth, shift=0):
             spec.append(scipy.average(spectrum[use]))
             j += smooth
         spectrum = interpolate.spline(pixels, spec, pix)
-
+    print pix.shape, spectrum.shape
     if bw:
         ax1d.plot(pix, spectrum + shift, 'k')
     else:
