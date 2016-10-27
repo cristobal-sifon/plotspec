@@ -44,6 +44,10 @@ Threshold, in units of the counts standard deviation, to remove bad pixels from 
 Greyscale color of the shading around each line (with width equal to `dv`), where `0` is black and `1` is white. 
   * `lheight` (type: `float` between `0` and `1` &mdash; default: `0.2`)  
 Relative height at which to place the names of the lines, with respect to the maximum value of the spectrum. 
+  * `xlim` (type: comma-separated list of `floats`)  
+Plot limits on the wavelength axis, in Angstrom
+  * `output` (type: `string`)  
+Name of output file to save the plot. If not provided, the plot will be displayed on-screen.
 
 ----
 

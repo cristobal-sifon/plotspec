@@ -35,7 +35,8 @@ if sys.argv[1] in ('-h', '--help'):
     print '\n'
     print '  Alphabetical list of available parameters:'
     print '    contrast, cz, dv, figtitle, file2d, fileroot, lheight,',
-    print 'linefile, linefill, thresh, tickspace, vmin, vmax, z'
+    print 'linefile, linefill, output, thresh, tickspace, vmin, vmax,',
+    print 'xlim (not yet), z'
     print '\n  See https://github.com/cristobal-sifon/plotspec/',
     print 'for more details'
     print
@@ -58,6 +59,7 @@ linefill = 0.8
 linefile = ''
 lheight = 0.2
 smooth = 1
+xlim = None
 output = ''
 
 # if only one argument is provided, will be assumed to be the filename
@@ -99,6 +101,8 @@ for argv in sys.argv:
         lheight = float(argv[8:])
     if argv[:7] == 'smooth=':
         smooth = int(argv[7:])
+    if argv[:5] == 'xlim=':
+        xlim = [float(i) for i in argv[5:].split(',')]
     if argv[:7] == 'output=':
         output = argv[7:]
 
@@ -176,10 +180,14 @@ def plot(file1d, file2d, title='', contrast=0.25, bin=1, z=0., dz=0.0005,
         ax2d = plot2d(fig, ax1d, file2d, z, rest, contrast, vmin, vmax, cmap=cmap)
     if title:
         pylab.title(title)
-    if __name__ == '__main__':
-        pylab.show()
-    #pylab.savefig('spectrum.png', format = 'png')
-    return fig, ax1d, ax2d
+    if output:
+        fig.savefig(output)
+    elif __name__ == '__main__':
+        fig.show()
+    if file2d:
+        return fig, ax1d, ax2d
+    else:
+        return fig, ax1d
 
 
 #------------------------------------------------------------------------#
@@ -213,7 +221,6 @@ def plot1d(file1d, ax1d, z, thresh, tickspace, rest, bw, smooth, shift=0):
             spec.append(scipy.average(spectrum[use]))
             j += smooth
         spectrum = interpolate.spline(pixels, spec, pix)
-    print pix.shape, spectrum.shape
     if bw:
         ax1d.plot(pix, spectrum + shift, 'k')
     else:
@@ -222,6 +229,8 @@ def plot1d(file1d, ax1d, z, thresh, tickspace, rest, bw, smooth, shift=0):
                                           z, rest)
     ax1d.set_xticks(xticks_loc)
     ax1d.set_xticklabels(xticks_val)
+    if xlim is not None:
+        ax1d.set_xlim(wave2pix(file1d, xlim[0]), wave2pix(file1d, xlim[1]))
     return spectrum
 
 
@@ -326,6 +335,8 @@ def plot2d(fig, ax1d, file2d, z, rest, contrast, vmin, vmax, cmap=cm.Greys_r):
                                           z, rest)
     ax2d.set_xticks(xticks_loc)
     ax2d.set_xticklabels(xticks_val)
+    if xlim is not None:
+        ax2d.set_xlim(wave2pix(file1d, xlim[0]), wave2pix(file1d, xlim[1]))
     return ax2d
 
 
