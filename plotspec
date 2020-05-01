@@ -7,45 +7,49 @@ import scipy
 import sys
 from astropy.io import fits as pyfits
 from matplotlib import cm
-from numdisplay import zscale
+#from numdisplay import zscale
 from scipy import interpolate
 
 import matplotlib
-matplotlib.rcParams['backend'] = 'GTKAgg'
+#matplotlib.rcParams['backend'] = 'GTKAgg'
 
 
 if sys.argv[1] in ('-h', '--help'):
     # introduction -- please don't delete
-    print
-    print '\t**********************************************'
-    print '\t*                                            *'
-    print '\t*                  plotspec                  *'
-    print '\t*                                            *'
-    print '\t*             by Cristobal Sifon             *'
-    print '\t*            Princeton University            *'
-    print '\t*           May, 2011 - Oct, 2016            *'
-    print '\t*                                            *'
-    print '\t* ------------------------------------------ *'
-    print '\t*         sifon@astro.princeton.edu          *'
-    print '\t*   http://www.astro.princeton.edu/~sifon/   *'
-    print '\t**********************************************'
-    print '\n'
-    print '  Usage:'
-    print '    plotspec <file1d> [<parameter>=<value>]'
-    print '\n'
-    print '  Alphabetical list of available parameters:'
-    print '    contrast, cz, dv, figtitle, file2d, fileroot, lheight,',
-    print 'linefile, linefill, output, thresh, tickspace, vmin, vmax,',
-    print 'xlim (not yet), z'
-    print '\n  See https://github.com/cristobal-sifon/plotspec/',
-    print 'for more details'
-    print
-    exit()
+    print()
+    print('\t**********************************************')
+    print('\t*                                            *')
+    print('\t*                  plotspec                  *')
+    print('\t*                                            *')
+    print('\t*             by Cristobal Sifon             *')
+    print('\t*            Princeton University            *')
+    print('\t*           May, 2011 - Oct, 2016            *')
+    print('\t*                                            *')
+    print('\t* ------------------------------------------ *')
+    print('\t*         sifon@astro.princeton.edu          *')
+    print('\t*   http://www.astro.princeton.edu/~sifon/   *')
+    print('\t**********************************************')
+    print('\n')
+    print('  Usage:')
+    print('    plotspec <file1d> [<parameter>=<value>]')
+    print('\n')
+    print('  Alphabetical list of available parameters:')
+    print('    contrast, cz, dv, figtitle, file2d, fileroot, lheight,',
+          end=' ')
+    print('linefile, linefill, output, thresh, tickspace, vmin, vmax,',
+          end=' ')
+    print('xlim (not yet), z')
+    print('\n  See https://github.com/cristobal-sifon/plotspec/',
+          end=' ')
+    print('for more details')
+    print()
+    sys.exit()
 
 
 # default values
 path = ''
-file1d = ''; file2d = ''
+file1d = ''
+file2d = ''
 contrast = 0.6
 vmin = None
 vmax = None
@@ -74,7 +78,10 @@ for argv in sys.argv:
     if argv[:7] == 'file1d=':
         file1d = argv[7:]
     if argv[:7] == 'file2d=':
-        file2d = argv[7:]
+        warn = "plotspec needs to be updated to use astropy's zscale." \
+               " Plotting the 2d spectrum is not available at the moment"
+        warnings.warn(warn)
+        #file2d = argv[7:]
     if argv[:2] == 'z=':
         z = float(argv[2:])
     if argv[:3] == 'cz=':
@@ -110,16 +117,11 @@ if cz != 0. and z == 0.:
     z = cz / 299792.458
 
 # plot at rest-frame?
-rest = False
-if '--rest' in sys.argv:
-    rest = True
+rest = ('--rest' in sys.argv)
 # colors?
-bw = False
-if '--bw' in sys.argv:
-    bw = True
-legend = True
-if '--no-legend' in sys.argv:
-    legend = False
+bw = ('--bw' in sys.argv)
+legend = ('--no-legend' not in sys.argv)
+sdss = ('--sdss' in sys.argv)
 
 # speed of light, in km/s
 c = 2999792.458
@@ -131,7 +133,7 @@ def main(path='', file1d='', file2d='', title='', contrast=0.25,
          tickspace=tickspace, linefill=0.8, lheight=0.2, rest=False,
          legend=True, smooth=1, bw=False, cmap=cm.Greys_r):
     if not file1d:
-        file1d = raw_input('Enter Filename for the 1d spectrum:\n\t')
+        file1d = input('Enter Filename for the 1d spectrum:\n\t')
     if path:
         file1d = path + file1d
         file2d = path + file2d
@@ -201,6 +203,7 @@ def plot1d(file1d, ax1d, z, thresh, tickspace, rest, bw, smooth, shift=0):
     if file1d[-5:] != '.fits' and file1d[-4:] != '.fit':
         file1d += '.fits'
     fits = pyfits.open(file1d)
+    #if not sdss:
     wavelength = pix2wave(file1d)
     pix = scipy.arange(1, len(wavelength) + 1)
     data = fits[0].data
